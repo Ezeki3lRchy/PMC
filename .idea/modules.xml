@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/OpenAI.iml" filepath="$PROJECT_DIR$/.idea/OpenAI.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/PMC.iml" filepath="$PROJECT_DIR$/.idea/PMC.iml" />
     </modules>
   </component>
 </project>
