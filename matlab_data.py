@@ -52,7 +52,7 @@ eng = matlab_init(full_path)
 #  test
 if eng is not None:
     try:
-        eng.eval("a = 1:5", nargout=0)
+        eng.eval("a = 1:5", nargout=0) # type: ignore
     except Exception as e:
         print(f"An error occurred: {e}")
 else:
@@ -61,10 +61,13 @@ else:
 # random number
 num_elements = 500
 min_value = 1e5
-max_value = 2e6
+max_value = 1e6
 random_numbers = [random.uniform(min_value, max_value) for _ in range(num_elements)]
 
 counter = 0
+
+
+
 
 for i in random_numbers:
 
