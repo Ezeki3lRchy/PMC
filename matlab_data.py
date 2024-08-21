@@ -15,7 +15,7 @@ heatflux_type = "sin"
 
 env_path = os.path.normpath(f'C:\\project_IHCP\\dataset_{material}_{heatflux_type}')
 input_model_path = os.path.normpath(f'C:\\project_IHCP\\IHCP_flight_{material}_{heatflux_type}.mph')
-save_model_path = os.path.normpath(f'D:\\cas\\flight_cas_{material}_{heatflux_type}')
+save_model_path = os.path.normpath(f'E:\\cas\\flight_cas_{material}_{heatflux_type}')
 
 
 # init
