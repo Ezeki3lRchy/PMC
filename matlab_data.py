@@ -11,7 +11,7 @@ full_path = os.path.join(shortcut_path, shortcut_name)
 
 # env_var_model and parameter
 material = "pm1000"  # pm1000 or sio2
-heatflux_type = "sin"
+heatflux_type = "constant"  # constant or sin
 
 env_path = os.path.normpath(f'C:\\project_IHCP\\dataset_{material}_{heatflux_type}')
 input_model_path = os.path.normpath(f'C:\\project_IHCP\\IHCP_flight_{material}_{heatflux_type}.mph')
