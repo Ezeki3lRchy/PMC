@@ -11,7 +11,7 @@ full_path = os.path.join(shortcut_path, shortcut_name)
 
 # env_var_model and parameter
 material = "pm1000"  # pm1000 or sio2
-heatflux_type = "constant"  # constant or sin
+heatflux_type = "sin"  # constant or sin
 
 env_path = os.path.normpath(f'C:\\project_IHCP\\dataset_{material}_{heatflux_type}')
 input_model_path = os.path.normpath(f'C:\\project_IHCP\\IHCP_flight_{material}_{heatflux_type}.mph')
@@ -25,7 +25,7 @@ def matlab_init(i_path):
     os.startfile(i_path)  # must launch it by .Ink for launch option 'matlab'
 
     # waiting
-    time.sleep(13)
+    time.sleep(30)
 
     # link to python
     matlab_sessions = matlab.engine.find_matlab()
@@ -33,7 +33,7 @@ def matlab_init(i_path):
     if matlab_sessions:
         matlab_eng = matlab.engine.connect_matlab(matlab_sessions[0])
     else:
-        max_retries = 5
+        max_retries = 10
         retry_delay = 3  # delta s
         for _ in range(max_retries):
             time.sleep(retry_delay)
