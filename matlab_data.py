@@ -10,13 +10,19 @@ shortcut_name = "COMSOL Multiphysics 6.2 with MATLAB.lnk"
 full_path = os.path.join(shortcut_path, shortcut_name)
 
 # env_var_model and parameter
-material = "pm1000"  # pm1000 or sio2
-heatflux_type = "sin"  # constant or sin
+material = "ptrh"  # pm1000 / sio2 / ptrh
+heatflux_type = "constant"  # constant or sin
 
 env_path = os.path.normpath(f'C:\\project_IHCP\\dataset_{material}_{heatflux_type}')
-input_model_path = os.path.normpath(f'C:\\project_IHCP\\IHCP_flight_{material}_{heatflux_type}.mph')
+
+#input_model_path = os.path.normpath(f'C:\\project_IHCP\\IHCP_flight_{material}_{heatflux_type}.mph')
+input_model_path = os.path.normpath(f'C:\\project_IHCP\\IHCP_flight_{material}.mph')
 save_model_path = os.path.normpath(f'E:\\cas\\flight_cas_{material}_{heatflux_type}')
 
+if heatflux_type == "constant":
+    boundary = "constantHF"
+if heatflux_type == "sin":
+    boundary = "sinHF"
 
 # init
 def matlab_init(i_path):
@@ -25,7 +31,7 @@ def matlab_init(i_path):
     os.startfile(i_path)  # must launch it by .Ink for launch option 'matlab'
 
     # waiting
-    time.sleep(30)
+    time.sleep(5)
 
     # link to python
     matlab_sessions = matlab.engine.find_matlab()
@@ -33,14 +39,14 @@ def matlab_init(i_path):
     if matlab_sessions:
         matlab_eng = matlab.engine.connect_matlab(matlab_sessions[0])
     else:
-        max_retries = 10
+        max_retries = 20
         retry_delay = 3  # delta s
         for _ in range(max_retries):
             time.sleep(retry_delay)
             matlab_sessions = matlab.engine.find_matlab()
             if matlab_sessions:
                 matlab_eng = matlab.engine.connect_matlab(matlab_sessions[0])
-                matlab_eng.eval("disp('Completed')", nargout=0)
+                matlab_eng.eval("disp('Completed')", nargout=0)  # type: ignore
                 break
         else:
             print("Failed to connect to MATLAB session after retries.")
@@ -59,7 +65,7 @@ else:
     print("Failed to initialize MATLAB engine.")
 
 # random number
-num_elements = 500
+num_elements = 1
 min_value = 1e5
 max_value = 1e6
 random_numbers = [random.uniform(min_value, max_value) for _ in range(num_elements)]
@@ -71,15 +77,20 @@ counter = 0
 
 for i in random_numbers:
 
-    # matlab TUI
-    eng.eval(f"""
+    # matlab TUI # 
+    eng.eval(f""" 
+             
         model = mphload('{input_model_path}');
         A = {i};
         offset = {i};
         model.hist.disable;
         model.param.set('A', A);
         model.param.set('offset', offset);
+
+        model.component('comp1').physics('ht_PM1000').feature('hf_BC').set('q0_input', '{boundary}');
+
         mphrun(model, 'study');
+
         modelName = fullfile('{save_model_path}', [ ...
                     'material=', '{material} ' ,...
                     '{i}_',...
@@ -87,19 +98,22 @@ for i in random_numbers:
                     '_A=', num2str(A),...
                     '_offset=', num2str(offset),...
                     '.mph']);
+        
         mphsave(model,modelName);
         input_path =  fullfile('{env_path}', 'input');
         output_path = fullfile('{env_path}', 'output');
         casename = ['{counter}', 'A_', num2str(A)];
         mkdir(fullfile(input_path, casename));
         mkdir(fullfile(output_path, casename));
+
                      % Exporting Rear Temperature Results as Image
         model.result.export('anim1').set('imagefilename',  fullfile(input_path,casename, 'input.png'));
                      % Exporting Heat flux Results as Image
         model.result.export('anim3').set('imagefilename',  fullfile(output_path,casename, 'output.png'));
+
         model.result().export("anim1").run();
         model.result().export("anim3").run(); 
-        """, nargout=0)
+        """, nargout=0) 
     counter += 1
     if counter % 50 == 0:
         eng.exit()
