@@ -80,17 +80,24 @@ for i in random_numbers:
     # matlab TUI # 
     eng.eval(f""" 
              
-        model = mphload('{input_model_path}');
+        model = mphload('{input_model_path}'); % load the model
+
+        % set the parameters
         A = {i};
         offset = {i};
         model.hist.disable;
         model.param.set('A', A);
         model.param.set('offset', offset);
 
+        
+        % set the boundary condition
         model.component('comp1').physics('ht_PM1000').feature('hf_BC').set('q0_input', '{boundary}');
+        model.result('pg3').feature('surf1').set('expr', '{boundary}');
 
+        % run the model
         mphrun(model, 'study');
 
+        % save the model
         modelName = fullfile('{save_model_path}', [ ...
                     'material=', '{material} ' ,...
                     '{i}_',...
