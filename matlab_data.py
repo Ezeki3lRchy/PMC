@@ -11,7 +11,7 @@ full_path = os.path.join(shortcut_path, shortcut_name)
 
 # env_var_model and parameter
 material = "ptrh"  # pm1000 / sio2 / ptrh
-heatflux_type = "constant"  # constant or sin
+heatflux_type = "sin"  # constant or sin
 
 env_path = os.path.normpath(f'C:\\project_IHCP\\dataset_{material}_{heatflux_type}')
 
@@ -65,7 +65,7 @@ else:
     print("Failed to initialize MATLAB engine.")
 
 # random number
-num_elements = 1
+num_elements = 1000
 min_value = 1e5
 max_value = 1e6
 random_numbers = [random.uniform(min_value, max_value) for _ in range(num_elements)]
