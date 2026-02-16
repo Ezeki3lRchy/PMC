@@ -5,24 +5,21 @@ import subprocess
 import time
 
 # env_var_COMSOL with matlab
-shortcut_path = r"C:\ProgramData\Microsoft\Windows\Start Menu\Programs\COMSOL Multiphysics 6.3"
-shortcut_name = "COMSOL Multiphysics 6.3 with MATLAB.lnk"
-full_path = os.path.join(shortcut_path, shortcut_name)
+SHORTCUT_PATH = r"C:\ProgramData\Microsoft\Windows\Start Menu\Programs\COMSOL Multiphysics 6.3"
+SHORTCUT_NAME = "COMSOL Multiphysics 6.3 with MATLAB.lnk"
+FULL_PATH = os.path.join(SHORTCUT_PATH, SHORTCUT_NAME)
 
 # env_var_model and parameter
-material = "ptrh"  # pm1000 / sio2 / ptrh
+material = "test"  # pm1000 / sio2 / ptrh
 heatflux_type = "sin"  # constant or sin
 
-env_path = os.path.normpath(f'C:\\project_IHCP\\dataset_{material}_{heatflux_type}')
+SAVE_PATH = os.path.normpath(f'F:\\32_MoviLSTM\\DC_corona\\dataset_{material}_{heatflux_type}')
 
 #input_model_path = os.path.normpath(f'C:\\project_IHCP\\IHCP_flight_{material}_{heatflux_type}.mph')
-input_model_path = os.path.normpath(f'C:\\project_IHCP\\IHCP_flight_{material}.mph')
-save_model_path = os.path.normpath(f'E:\\cas\\flight_cas_{material}_{heatflux_type}')
+INPUT_MPH_PATH = os.path.normpath(f'F:\\32_MoviLSTM\\DC_corona\\point_to_plane_dc_corona.mph')
+SAVE_MPH_PATH = os.path.normpath(f'F:\\32_MoviLSTM\\DC_corona\\cas')
 
-if heatflux_type == "constant":
-    boundary = "constantHF"
-if heatflux_type == "sin":
-    boundary = "sinHF"
+
 
 # init
 def matlab_init(i_path):
@@ -53,7 +50,7 @@ def matlab_init(i_path):
     return matlab_eng
 
 
-eng = matlab_init(full_path)
+eng = matlab_init(FULL_PATH)
 
 #  test
 if eng is not None:
@@ -65,11 +62,11 @@ else:
     print("Failed to initialize MATLAB engine.")
 
 # random number
-num_elements = 1000
-min_value = 1e5
-max_value = 1e6
+num_elements = 5
+min_value = -4000
+max_value = -5000
 random_numbers = [random.uniform(min_value, max_value) for _ in range(num_elements)]
-
+kv_values = [x / 1000 for x in random_numbers]
 counter = 0
 
 
@@ -80,7 +77,7 @@ for i in random_numbers:
     # matlab TUI # 
     eng.eval(f""" 
              
-        model = mphload('{input_model_path}'); % load the model
+        model = mphload('{INPUT_MPH_PATH}'); % load the model
 
         % set the parameters
         A = {i};
@@ -88,17 +85,16 @@ for i in random_numbers:
         model.hist.disable;
         model.param.set('A', A);
         model.param.set('offset', offset);
+        model.param.set('V0', '{i}[V]');
+        model.study('std2').feature('stat').set('plistarr', 'range({i/1000},(({i/100})+({i/1000}))/5,{i/100})');
 
-        
-        % set the boundary condition
-        model.component('comp1').physics('ht_PM1000').feature('hf_BC').set('q0_input', '{boundary}');
-        model.result('pg3').feature('surf1').set('expr', '{boundary}');
 
         % run the model
-        mphrun(model, 'study');
-
+        mphrun(model, 'std1');
+        mphrun(model, 'std2');
+        
         % save the model
-        modelName = fullfile('{save_model_path}', [ ...
+        modelName = fullfile('{SAVE_MPH_PATH}', [ ...
                     'material=', '{material} ' ,...
                     '{i}_',...
                     'Type=', '{heatflux_type}',...
@@ -107,26 +103,26 @@ for i in random_numbers:
                     '.mph']);
         
         mphsave(model,modelName);
-        input_path =  fullfile('{env_path}', 'input');
-        output_path = fullfile('{env_path}', 'output');
+        input_path =  fullfile('{SAVE_PATH}', 'input');
+        output_path = fullfile('{SAVE_PATH}', 'output');
         casename = ['{counter}', 'A_', num2str(A)];
         mkdir(fullfile(input_path, casename));
         mkdir(fullfile(output_path, casename));
 
                      % Exporting Rear Temperature Results as Image
-        model.result.export('anim1').set('imagefilename',  fullfile(input_path,casename, 'input.png'));
+        
                      % Exporting Heat flux Results as Image
-        model.result.export('anim3').set('imagefilename',  fullfile(output_path,casename, 'output.png'));
+        model.result.export('anim1').set('imagefilename',  fullfile(output_path,casename, 'output.png'));
 
-        model.result().export("anim1").run();
-        model.result().export("anim3").run(); 
+        
+        model.result().export("anim1").run(); 
         """, nargout=0) 
     counter += 1
     if counter % 50 == 0:
         eng.exit()
         processes_to_kill = ['MATLAB.exe', 'comsolmphserver.exe']  # 'comsoldocserver.exe'
         [subprocess.run(['taskkill', '/F', '/IM', process_name]) for process_name in processes_to_kill]
-        eng = matlab_init(full_path)
+        eng = matlab_init(FULL_PATH)
 
 '''
 nargout=0: This means you expect no output arguments from the MATLAB function. 
