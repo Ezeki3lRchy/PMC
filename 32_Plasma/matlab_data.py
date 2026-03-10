@@ -11,13 +11,13 @@ FULL_PATH = os.path.join(SHORTCUT_PATH, SHORTCUT_NAME)
 
 # env_var_model and parameter
 material = "test"  # pm1000 / sio2 / ptrh
-heatflux_type = "sin"  # constant or sin
+parameter_type = "sin"  # constant or sin
 
-SAVE_PATH = os.path.normpath(f'F:\\32_MoviLSTM\\DC_corona\\dataset_{material}_{heatflux_type}')
+SAVE_PATH = os.path.normpath(f'F:\\32_MoviLSTM\\Argon_GEC_CCP\\dataset_{material}_{parameter_type}')
 
 #input_model_path = os.path.normpath(f'C:\\project_IHCP\\IHCP_flight_{material}_{heatflux_type}.mph')
-INPUT_MPH_PATH = os.path.normpath(f'F:\\32_MoviLSTM\\DC_corona\\point_to_plane_dc_corona.mph')
-SAVE_MPH_PATH = os.path.normpath(f'F:\\32_MoviLSTM\\DC_corona\\cas')
+INPUT_MPH_PATH = os.path.normpath(f'F:\\32_MoviLSTM\\Argon_GEC_CCP\\argon_gec_ccp.mph')
+SAVE_MPH_PATH = os.path.normpath(f'F:\\32_MoviLSTM\\Argon_GEC_CCP\\cas')
 
 
 
@@ -63,8 +63,8 @@ else:
 
 # random number
 num_elements = 5
-min_value = -4000
-max_value = -5000
+min_value = 10
+max_value = 20
 random_numbers = [random.uniform(min_value, max_value) for _ in range(num_elements)]
 kv_values = [x / 1000 for x in random_numbers]
 counter = 0
@@ -85,8 +85,7 @@ for i in random_numbers:
         model.hist.disable;
         model.param.set('A', A);
         model.param.set('offset', offset);
-        model.param.set('V0', '{i}[V]');
-        model.study('std2').feature('stat').set('plistarr', 'range({i/1000},(({i/100})+({i/1000}))/5,{i/100})');
+        model.param.set('f0', '{i}[MHz]');
 
 
         % run the model
@@ -97,7 +96,7 @@ for i in random_numbers:
         modelName = fullfile('{SAVE_MPH_PATH}', [ ...
                     'material=', '{material} ' ,...
                     '{i}_',...
-                    'Type=', '{heatflux_type}',...
+                    'Type=', '{parameter_type}',...
                     '_A=', num2str(A),...
                     '_offset=', num2str(offset),...
                     '.mph']);
@@ -112,10 +111,10 @@ for i in random_numbers:
                      % Exporting Rear Temperature Results as Image
         
                      % Exporting Heat flux Results as Image
-        model.result.export('anim1').set('imagefilename',  fullfile(output_path,casename, 'output.png'));
+        model.result.export('anim2').set('imagefilename',  fullfile(output_path,casename, 'output.png'));
 
         
-        model.result().export("anim1").run(); 
+        model.result().export("anim2").run(); 
         """, nargout=0) 
     counter += 1
     if counter % 50 == 0:
