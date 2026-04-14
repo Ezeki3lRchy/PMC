@@ -11,13 +11,13 @@ FULL_PATH = os.path.join(SHORTCUT_PATH, SHORTCUT_NAME)
 
 # env_var_model and parameter
 material = "test"  # pm1000 / sio2 / ptrh
-parameter_type = "sin"  # constant or sin
+parameter_type = "var_p_mu"  # constant or sin
 
-SAVE_PATH = os.path.normpath(f'F:\\32_MoviLSTM\\Argon_GEC_CCP\\dataset_{material}_{parameter_type}')
+SAVE_PATH = os.path.normpath(f'D:\\32_MoviLSTM\\Argon_GEC_CCP\\dataset_{material}_{parameter_type}')
 
 #input_model_path = os.path.normpath(f'C:\\project_IHCP\\IHCP_flight_{material}_{heatflux_type}.mph')
-INPUT_MPH_PATH = os.path.normpath(f'F:\\32_MoviLSTM\\Argon_GEC_CCP\\argon_gec_ccp.mph')
-SAVE_MPH_PATH = os.path.normpath(f'F:\\32_MoviLSTM\\Argon_GEC_CCP\\cas')
+INPUT_MPH_PATH = os.path.normpath(f'D:\\32_MoviLSTM\\Argon_GEC_CCP\\argon_gec_ccp.mph')
+SAVE_MPH_PATH = os.path.normpath(f'D:\\32_MoviLSTM\\Argon_GEC_CCP\\cas')
 
 
 
@@ -40,7 +40,7 @@ def matlab_init(i_path):
         retry_delay = 3  # delta s
         for _ in range(max_retries):
             time.sleep(retry_delay)
-            matlab_sessions = matlab.engine.find_matlab()
+            matlab_sessions = matlab.engine.find_matlab()   
             if matlab_sessions:
                 matlab_eng = matlab.engine.connect_matlab(matlab_sessions[0])
                 matlab_eng.eval("disp('Completed')", nargout=0)  # type: ignore
@@ -62,9 +62,9 @@ else:
     print("Failed to initialize MATLAB engine.")
 
 # random number
-num_elements = 5
-min_value = 10
-max_value = 20
+num_elements = 500
+min_value = 0.05
+max_value = 0.3
 random_numbers = [random.uniform(min_value, max_value) for _ in range(num_elements)]
 kv_values = [x / 1000 for x in random_numbers]
 counter = 0
@@ -85,7 +85,7 @@ for i in random_numbers:
         model.hist.disable;
         model.param.set('A', A);
         model.param.set('offset', offset);
-        model.param.set('f0', '{i}[MHz]');
+        model.param.set('pgas', '{i}[Torr]');
 
 
         % run the model
@@ -111,10 +111,13 @@ for i in random_numbers:
                      % Exporting Rear Temperature Results as Image
         
                      % Exporting Heat flux Results as Image
-        model.result.export('anim2').set('imagefilename',  fullfile(output_path,casename, 'output.png'));
+        model.result.export('anim2').set('imagefilename',  fullfile(input_path,casename, 'input.png'));            
+        model.result.export('anim3').set('imagefilename',  fullfile(output_path,casename, 'output.png'));
 
         
         model.result().export("anim2").run(); 
+        model.result().export("anim3").run();
+        
         """, nargout=0) 
     counter += 1
     if counter % 50 == 0:
