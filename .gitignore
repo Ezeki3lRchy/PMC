@@ -1,2 +1,8 @@
 .venv/
 .vscode/
+__pycache__/
+*.pyc
+.claude
+.idea
+.omc
+.venv/
